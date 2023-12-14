@@ -2,19 +2,21 @@
 FROM node:14
 
 # Set the working directory to /app
-WORKDIR /app/appFrontEnd
+WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
-COPY appFrontEnd/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
 # Copy the entire frontend directory to the working directory
-COPY appFrontEnd .
+COPY . .
+
+ENV PORT=8080
 
 # Expose port 3000 for the React application
-EXPOSE 3000
+EXPOSE 8080
 
 # Command to run the React application
 CMD ["npm", "start"]

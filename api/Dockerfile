@@ -13,10 +13,10 @@ RUN npm install
 # Copy the entire frontend directory to the working directory
 COPY . .
 
-ENV PORT=8080
+ENV PORT=3000
 
-# Expose port 3000 for the React application
-EXPOSE 8080
+
+EXPOSE 3000
 
 # Command to run the React application
-CMD ["npm", "start"]
+CMD ["npm"]

@@ -18,4 +18,4 @@ EXPOSE 8080
 
 
 # Command to run the React application
-CMD ["npm", "run",  "build"]
+CMD ["npm", "start"]

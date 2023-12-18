@@ -1,29 +1,28 @@
-
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 mongoose.connect('mongodb://mongodb:27017/school', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
-// Define a mongoose schema for the 'students' collection
 const studentSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
   className: String,
 });
 
-// Create a mongoose model based on the schema
 const Student = mongoose.model('Student', studentSchema);
 
-// Middleware to parse JSON
 app.use(express.json());
 
-// Endpoint to add a new student
+// Serve the React app build
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.post('/api/students', async (req, res) => {
   const { firstName, lastName, className } = req.body;
   const student = new Student({ firstName, lastName, className });
@@ -36,7 +35,6 @@ app.post('/api/students', async (req, res) => {
   }
 });
 
-// Endpoint to get all students
 app.get('/api/students', async (req, res) => {
   try {
     const students = await Student.find();
@@ -46,6 +44,14 @@ app.get('/api/students', async (req, res) => {
   }
 });
 
+
+
+// Handle other routes by serving the React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+

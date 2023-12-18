@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management System</title>
+    <!-- Ajoutez vos liens CSS ici, par exemple pour Tailwind CSS -->
+
+</head>
+<body>
+    <!-- Votre contenu personnalisé ici -->
+    <h1>School Management System</h1>
+    <div>
+        <h2>Add Student</h2>
+        <input type="text" name="firstName" placeholder="First Name" />
+        <input type="text" name="lastName" placeholder="Last Name" />
+        <input type="text" name="className" placeholder="Class" />
+        <button onclick="handleAddStudent()">Add Student</button>
+    </div>
+    <div>
+        <h2>All Students</h2>
+        <ul id="studentList"></ul>
+    </div>
+
+    <script>
+        function handleAddStudent() {
+            // Récupérez les valeurs des champs de saisie
+            const firstName = document.querySelector('input[name="firstName"]').value;
+            const lastName = document.querySelector('input[name="lastName"]').value;
+            const className = document.querySelector('input[name="className"]').value;
+
+            // Vérifiez si tous les champs sont remplis
+            if (!firstName || !lastName || !className) {
+                alert("Please fill in all fields");
+                return;
+            }
+
+            // Construisez l'objet à envoyer dans la requête POST
+            const newStudent = {
+                firstName: firstName,
+                lastName: lastName,
+                className: className
+            };
+
+            // Effectuez une requête POST à l'API
+            fetch('/api/students', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newStudent),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Mettez à jour l'affichage avec le nouveau étudiant
+                const studentList = document.getElementById('studentList');
+                const listItem = document.createElement('li');
+                listItem.textContent = `${data.firstName} ${data.lastName} - ${data.className}`;
+                studentList.appendChild(listItem);
+
+                // Effacez les champs de saisie
+                document.querySelector('input[name="firstName"]').value = '';
+                document.querySelector('input[name="lastName"]').value = '';
+                document.querySelector('input[name="className"]').value = '';
+
+                alert("Student added successfully");
+            })
+            .catch(error => {
+                console.error('Error adding student:', error);
+                alert("An error occurred while adding the student");
+            });
+        }
+    </script>
+</body>
+</html>

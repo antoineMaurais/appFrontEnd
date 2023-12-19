@@ -5,7 +5,13 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-mongoose.connect('mongodb://mongodb:27017/school', {
+const mongoUser = 'admin';
+const mongoPassword = 'admin';
+const mongoHost = 'mongodb';
+const mongoPort = '27017';
+const mongoConnection = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/school`;
+
+mongoose.connect(mongoConnection, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

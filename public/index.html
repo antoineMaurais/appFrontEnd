@@ -70,6 +70,30 @@
                 alert("An error occurred while adding the student");
             });
         }
+
+         // Fonction pour récupérer la liste des étudiants lors du chargement initial
+         function fetchStudents() {
+            fetch('/api/students')
+            .then(response => response.json())
+            .then(data => {
+                const studentList = document.getElementById('studentList');
+                // Effacez le contenu actuel de la liste
+                studentList.innerHTML = '';
+
+                // Ajoutez chaque étudiant à la liste
+                data.forEach(student => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${student.firstName} ${student.lastName} - ${student.className}`;
+                    studentList.appendChild(listItem);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching students:', error);
+            });
+        }
+
+        // Exécutez la fonction fetchStudents lors du chargement de la page
+        window.onload = fetchStudents;
     </script>
 </body>
 </html>

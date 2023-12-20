@@ -23,7 +23,19 @@ mongoose.connection.on('error', (err) => {
 
 const initDatabase = async () => {
   try {
-    const collectionExists = await mongoose.connection.db.listCollections({ name: 'people' }).hasNext();
+    // Connexion à la base de données
+    await mongoose.connect(mongoConnection, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    // Création de la base de données "dbname"
+    await mongoose.connection.db.createCollection('dbname');
+
+    // Vérification de l'existence de la collection 'people'
+    const collectionExists = await mongoose.connection.db
+        .listCollections({ name: 'people' })
+        .hasNext();
 
     if (!collectionExists) {
       const peopleData = [
@@ -32,6 +44,7 @@ const initDatabase = async () => {
         { name: 'Bob', surname: 'Johnson', classe: 'A' },
       ];
 
+      // Création de la collection 'people' et insertion des données par défaut
       await mongoose.connection.db.createCollection('people');
       await mongoose.connection.db.collection('people').insertMany(peopleData);
 
@@ -41,10 +54,13 @@ const initDatabase = async () => {
     }
   } catch (error) {
     console.error('Error initializing database:', error);
+  } finally {
+    // Fermer la connexion à la base de données
+    await mongoose.connection.close();
   }
 };
 
-// Initialiser la base de données lors du démarrage du serveur
+// Appeler la fonction d'initialisation de la base de données
 initDatabase();
 
 const studentSchema = new mongoose.Schema({

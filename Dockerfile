@@ -11,10 +11,10 @@ COPY . .
 RUN npm install
 
 
-ENV PORT=8080
+ENV PORT=3000
 
 # Expose port 3000 for the React application
-EXPOSE 8080
+EXPOSE 3000
 
 
 # Command to run the React application

@@ -1,87 +1,69 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
 const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
 const mongoUser = 'admin';
 const mongoPassword = 'admin';
 const mongoHost = 'localhost';
 const mongoPort = '27017';
+const mongoDatabase = 'dbname'; // Nom de votre base de données
 const mongoConnection = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}`;
 
-mongoose.connect(mongoConnection, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+let db; // Variable pour stocker la référence à la base de données
 
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
-  process.exit(1); // Quitter l'application en cas d'erreur de connexion à la base de données
-});
+// Connexion à la base de données MongoDB
+MongoClient.connect(mongoConnection, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then((client) => {
+    console.log('Connected to MongoDB');
+    db = client.db(mongoDatabase);
 
-
+    // Appeler la fonction d'initialisation de la base de données
+    initDatabase();
+  })
+  .catch((error) => {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
+  });
 
 const initDatabase = async () => {
   try {
-    // Connexion à la base de données
-    await mongoose.connect(mongoConnection, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    console.log('MongoDB Connection:', db);
 
-        // Ajoutez ces lignes avant la ligne 33 dans votre fichier index.js
-    console.log('Mongoose Connection:', mongoose.connection); // Ajoutez cette ligne
-    if (!mongoose.connection) {
-        console.error('MongoDB connection not established.');
-        return;
+    // Création de la base de données si elle n'existe pas
+    const dbList = await db.admin().listDatabases();
+    if (!dbList.databases.some((database) => database.name === mongoDatabase)) {
+      await db.admin().createDatabase(mongoDatabase);
+      console.log(`Database ${mongoDatabase} created.`);
     }
 
-// Continuez avec le reste de votre code...
+    // Utilisation de la base de données
+    db = client.db(mongoDatabase);
 
-
-    // Création de la base de données "dbname"
-    await mongoose.connection.db.createCollection('dbname');
-
-    // Vérification de l'existence de la collection 'people'
-    const collectionExists = await mongoose.connection.db
-        .listCollections({ name: 'people' })
-        .hasNext();
+    // Vérification de l'existence de la collection 'students'
+    const collectionExists = await db.listCollections({ name: 'students' }).hasNext();
 
     if (!collectionExists) {
-      const peopleData = [
-        { name: 'John', surname: 'Doe', classe: 'A' },
-        { name: 'Jane', surname: 'Smith', classe: 'B' },
-        { name: 'Bob', surname: 'Johnson', classe: 'A' },
+      const studentsData = [
+        { firstName: 'John', lastName: 'Doe', className: 'A' },
+        { firstName: 'Jane', lastName: 'Smith', className: 'B' },
+        { firstName: 'Bob', lastName: 'Johnson', className: 'A' }
       ];
 
-      // Création de la collection 'people' et insertion des données par défaut
-      await mongoose.connection.db.createCollection('people');
-      await mongoose.connection.db.collection('people').insertMany(peopleData);
+      // Création de la collection 'students' et insertion des données par défaut
+      await db.createCollection('students');
+      await db.collection('students').insertMany(studentsData);
 
-      console.log('Database initialized with default data.');
+      console.log('Students collection initialized with default data.');
     } else {
-      console.log('Database already initialized.');
+      console.log('Students collection already initialized.');
     }
   } catch (error) {
     console.error('Error initializing database:', error);
-  } finally {
-    // Fermer la connexion à la base de données
-    await mongoose.connection.close();
   }
 };
-
-// Appeler la fonction d'initialisation de la base de données
-initDatabase();
-
-const studentSchema = new mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  className: String,
-});
-
-const Student = mongoose.model('Student', studentSchema);
 
 app.use(express.json());
 
@@ -90,10 +72,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/api/students', async (req, res) => {
   const { firstName, lastName, className } = req.body;
-  const student = new Student({ firstName, lastName, className });
+  const student = { firstName, lastName, className };
 
   try {
-    await student.save();
+    await db.collection('students').insertOne(student);
     res.status(201).send(student);
   } catch (error) {
     res.status(500).send(error);
@@ -102,7 +84,7 @@ app.post('/api/students', async (req, res) => {
 
 app.get('/api/students', async (req, res) => {
   try {
-    const students = await Student.find();
+    const students = await db.collection('students').find({}).toArray();
     res.send(students);
   } catch (error) {
     res.status(500).send(error);

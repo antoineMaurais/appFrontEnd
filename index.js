@@ -7,7 +7,7 @@ const port = process.env.PORT || 3000;
 
 const mongoUser = 'admin';
 const mongoPassword = 'admin';
-const mongoHost = 'mongodb';
+const mongoHost = 'localhost';
 const mongoPort = '27017';
 const mongoConnection = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}`;
 

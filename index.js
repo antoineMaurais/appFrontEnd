@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const mongodb = require('mongodb');
 const path = require('path');
 
 const app = express();
@@ -9,13 +9,9 @@ const mongoUser = 'admin';
 const mongoPassword = 'admin';
 const mongoHost = '192.168.100.102';
 const mongoPort = '27017';
-const mongoDatabase = 'dbStudent'; 
+const mongoDatabase = 'dbStudent';
 
 const mongoConnection = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}`;
-
-let db; // Variable pour stocker la référence à la base de données
-
-///Test
 
 const mongClient = new mongodb.MongoClient(mongoConnection);
 
@@ -26,19 +22,19 @@ const studentsData = [
 ];
 
 async function initDB(req, res) {
-	await mongClient.connect()
-	let database = mongClient.db(mongoDatabase)
-	let students = database.collection('students')
-	let studentsCount = await students.countDocuments()
-	if (studentsCount === 0){
-		await students.insertMany(studentsData)
+  try {
+    await mongClient.connect();
+    let database = mongClient.db(mongoDatabase);
+    let students = database.collection('students');
+    let studentsCount = await students.countDocuments();
 
-	}
-	
+    if (studentsCount === 0) {
+      await students.insertMany(studentsData);
+    }
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
 }
-///fin test
-
-
 
 app.use(express.json());
 
@@ -50,7 +46,9 @@ app.post('/api/students', async (req, res) => {
   const student = { firstName, lastName, className };
 
   try {
-    await db.collection('students').insertOne(student);
+    await mongClient.connect(); // Connectez-vous si la connexion n'est pas déjà établie
+    let database = mongClient.db(mongoDatabase);
+    await database.collection('students').insertOne(student);
     res.status(201).send(student);
   } catch (error) {
     res.status(500).send(error);
@@ -59,7 +57,9 @@ app.post('/api/students', async (req, res) => {
 
 app.get('/api/students', async (req, res) => {
   try {
-    const students = await db.collection('students').find({}).toArray();
+    await mongClient.connect(); // Connectez-vous si la connexion n'est pas déjà établie
+    let database = mongClient.db(mongoDatabase);
+    const students = await database.collection('students').find({}).toArray();
     res.send(students);
   } catch (error) {
     res.status(500).send(error);

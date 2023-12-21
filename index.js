@@ -9,61 +9,36 @@ const mongoUser = 'admin';
 const mongoPassword = 'admin';
 const mongoHost = '192.168.100.102';
 const mongoPort = '27017';
-const mongoDatabase = 'dbname'; // Nom de votre base de données
+const mongoDatabase = 'dbStudent'; 
+
 const mongoConnection = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}`;
 
 let db; // Variable pour stocker la référence à la base de données
 
-// Connexion à la base de données MongoDB
-MongoClient.connect(mongoConnection, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then((client) => {
-    console.log('Connected to MongoDB');
-    db = client.db(mongoDatabase);
+///Test
 
-    // Appeler la fonction d'initialisation de la base de données
-    initDatabase();
-  })
-  .catch((error) => {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  });
+const mongClient = new mongodb.MongoClient(mongoConnection);
 
-const initDatabase = async () => {
-  try {
-    console.log('MongoDB Connection:', db);
+const studentsData = [
+  { firstName: 'John', lastName: 'Doe', className: 'A' },
+  { firstName: 'Jane', lastName: 'Smith', className: 'B' },
+  { firstName: 'Bob', lastName: 'Johnson', className: 'A' }
+];
 
-    // Création de la base de données si elle n'existe pas
-    const dbList = await db.admin().listDatabases();
-    if (!dbList.databases.some((database) => database.name === mongoDatabase)) {
-      await db.admin().createDatabase(mongoDatabase);
-      console.log(`Database ${mongoDatabase} created.`);
-    }
+async function initDB(req, res) {
+	await mongClient.connect()
+	let database = mongClient.db(mongoDatabase)
+	let students = database.collection('students')
+	let studentsCount = await students.countDocuments()
+	if (studentsCount === 0){
+		await students.insertMany(studentsData)
 
-    // Utilisation de la base de données
-    db = client.db(mongoDatabase);
+	}
+	
+}
+///fin test
 
-    // Vérification de l'existence de la collection 'students'
-    const collectionExists = await db.listCollections({ name: 'students' }).hasNext();
 
-    if (!collectionExists) {
-      const studentsData = [
-        { firstName: 'John', lastName: 'Doe', className: 'A' },
-        { firstName: 'Jane', lastName: 'Smith', className: 'B' },
-        { firstName: 'Bob', lastName: 'Johnson', className: 'A' }
-      ];
-
-      // Création de la collection 'students' et insertion des données par défaut
-      await db.createCollection('students');
-      await db.collection('students').insertMany(studentsData);
-
-      console.log('Students collection initialized with default data.');
-    } else {
-      console.log('Students collection already initialized.');
-    }
-  } catch (error) {
-    console.error('Error initializing database:', error);
-  }
-};
 
 app.use(express.json());
 
@@ -93,6 +68,7 @@ app.get('/api/students', async (req, res) => {
 
 // Handle other routes by serving the React app
 app.get('*', (req, res) => {
+  initDB(req, res);
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

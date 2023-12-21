@@ -21,6 +21,8 @@ mongoose.connection.on('error', (err) => {
   process.exit(1); // Quitter l'application en cas d'erreur de connexion à la base de données
 });
 
+
+
 const initDatabase = async () => {
   try {
     // Connexion à la base de données
@@ -28,6 +30,16 @@ const initDatabase = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
+
+        // Ajoutez ces lignes avant la ligne 33 dans votre fichier index.js
+    console.log('Mongoose Connection:', mongoose.connection); // Ajoutez cette ligne
+    if (!mongoose.connection) {
+        console.error('MongoDB connection not established.');
+        return;
+    }
+
+// Continuez avec le reste de votre code...
+
 
     // Création de la base de données "dbname"
     await mongoose.connection.db.createCollection('dbname');

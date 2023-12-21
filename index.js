@@ -7,7 +7,7 @@ const port = 3000;
 
 const mongoUser = 'admin';
 const mongoPassword = 'admin';
-const mongoHost = 'localhost';
+const mongoHost = '192.168.100.102';
 const mongoPort = '27017';
 const mongoDatabase = 'dbname'; // Nom de votre base de données
 const mongoConnection = `mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}`;
